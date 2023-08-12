@@ -25,6 +25,7 @@ jobs:
     - name: Display SoftUni Username
       run: echo "georgigrozev13"
   deploy:
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -35,3 +36,22 @@ jobs:
       with:     
         service-id: ${{secrets.SERVICE_ID}}      
         api-key: ${{secrets.API_KEY}}	
+  ui-tests:
+    needs: deploy
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [14.x]
+    steps:
+    - uses: actions/checkout@v3
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v3
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - name: Installing NPM
+      run: npm install   
+    - name: Install Playwright
+      run: npx playwright install --with-deps
+    - name: Running UI tests
+      run: npm run test:ui
